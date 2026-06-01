@@ -1,0 +1,48 @@
+
+name: Build Android APK
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-size: 20
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          npm install @capacitor/android@6.0.0
+
+      - name: Initialize Capacitor Android
+        run: |
+          npx cap bunk
+          npx cap add android
+
+      - name: Sync Code to Android Project
+        run: npx cap sync
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Build Android APK (Release)
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload Finished APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDF-Shredder-Official-APK
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
