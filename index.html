@@ -8,63 +8,38 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
 
-    <!-- हेडर -->
     <header class="w-full flex justify-between items-center p-4 bg-gray-800 shadow-md">
         <div onclick="toggleMenu('pdfMenu')" class="cursor-pointer text-2xl">☰</div>
         <h1 class="font-bold text-xl text-red-500">PDF SHREDDER</h1>
         <div onclick="toggleMenu('settingsMenu')" class="cursor-pointer text-2xl">⠿</div>
     </header>
 
-    <!-- PDF मेन्यू (Features) -->
     <div id="pdfMenu" class="fixed left-0 top-0 h-full w-72 bg-gray-900 p-6 shadow-2xl hidden z-50 overflow-y-auto border-r border-gray-700">
         <button onclick="toggleMenu('pdfMenu')" class="mb-6 font-bold text-red-500">✕ बंद करें</button>
-        
         <div class="space-y-6">
-            <!-- ORGANIZE -->
             <div><h2 class="text-xs font-bold text-gray-500 uppercase">ORGANIZE PDF</h2>
                 <div class="mt-2 space-y-2">
                     <a href="#" onclick="processTool('merge')" class="block hover:text-red-500">Merge PDF</a>
                     <a href="#" onclick="processTool('split')" class="block hover:text-red-500">Split PDF</a>
-                    <a href="#" onclick="processTool('remove')" class="block hover:text-red-500">Remove pages</a>
-                    <a href="#" onclick="processTool('extract')" class="block hover:text-red-500">Extract pages</a>
                 </div>
             </div>
-            <!-- OPTIMIZE -->
-            <div><h2 class="text-xs font-bold text-gray-500 uppercase">OPTIMIZE PDF</h2>
-                <div class="mt-2 space-y-2">
-                    <a href="#" onclick="processTool('compress')" class="block hover:text-red-500">Compress PDF</a>
-                    <a href="#" onclick="processTool('repair')" class="block hover:text-red-500">Repair PDF</a>
-                </div>
-            </div>
-            <!-- CONVERT -->
-            <div><h2 class="text-xs font-bold text-gray-500 uppercase">CONVERT TO PDF</h2>
+            <div><h2 class="text-xs font-bold text-gray-500 uppercase">CONVERT</h2>
                 <div class="mt-2 space-y-2">
                     <a href="#" onclick="processTool('jpg2pdf')" class="block hover:text-red-500">JPG to PDF</a>
-                    <a href="#" onclick="processTool('word2pdf')" class="block hover:text-red-500">WORD to PDF</a>
-                    <a href="#" onclick="processTool('excel2pdf')" class="block hover:text-red-500">EXCEL to PDF</a>
+                    <a href="#" onclick="processTool('pdf2jpg')" class="block hover:text-red-500">PDF to JPG</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- सेटिंग्स मेन्यू -->
-    <div id="settingsMenu" class="fixed right-0 top-0 h-full w-64 bg-gray-900 p-6 shadow-2xl hidden z-50 border-l border-gray-700">
-        <button onclick="toggleMenu('settingsMenu')" class="mb-6 font-bold text-red-500">✕ बंद करें</button>
-        <div class="space-y-4">
-            <a href="#" class="block hover:text-red-500">Login / Sign up</a>
-            <a href="#" class="block hover:text-red-500">Security</a>
-        </div>
-    </div>
-
-    <!-- मुख्य कंटेंट -->
     <main class="p-6 flex flex-col items-center mt-10">
-        <div id="toolInterface" class="w-full max-w-md bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
+        <div class="w-full max-w-md bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
             <h2 id="toolTitle" class="text-xl font-bold mb-4 text-center text-red-500">MERGE PDF</h2>
             <div class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center mb-4">
-                <input type="file" id="fileInput" class="w-full">
+                <input type="file" id="fileInput" class="w-full" multiple>
             </div>
             <button onclick="uploadFile()" class="w-full bg-red-600 hover:bg-red-700 p-3 rounded-xl font-bold transition">Process File 🚀</button>
-            <p id="status" class="mt-4 text-sm text-center text-gray-400">फाइल चुनें और काम शुरू करें</p>
+            <p id="status" class="mt-4 text-sm text-center text-gray-400">फाइलें चुनें और प्रोसेस करें</p>
         </div>
     </main>
 
@@ -79,13 +54,36 @@
         }
 
         async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            if(fileInput.files.length === 0) return alert("कृपया फाइलें चुनें!");
             const status = document.getElementById('status');
-            status.innerText = "प्रोसेसिंग " + activeTool + " चालू है... ⏳";
+            status.innerText = "प्रोसेसिंग चालू है... ⏳";
             
-            // यहाँ तुम्हारा बैकएंड API कनेक्शन काम करेगा
-            setTimeout(() => {
-                status.innerText = "सफलतापूर्वक पूरा हो गया! 🎉";
-            }, 2000);
+            const formData = new FormData();
+            for(let i=0; i<fileInput.files.length; i++) {
+                formData.append('files', fileInput.files[i]);
+            }
+            formData.append('tool', activeTool);
+
+            try {
+                const response = await fetch("https://pdf-shredder.onrender.com/api/v1/pdf/convert", {
+                    method: "POST",
+                    body: formData
+                });
+                if(!response.ok) throw new Error("सर्वर एरर");
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `result_${activeTool}_${Date.now()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                status.innerText = "सफलतापूर्वक डाउनलोड हो गया! 🎉";
+            } catch (e) {
+                status.innerText = "एरर: सर्वर रिस्पॉन्स नहीं दे रहा!";
+            }
         }
     </script>
 </body>
