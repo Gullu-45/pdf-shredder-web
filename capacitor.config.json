@@ -1,0 +1,10 @@
+```json
+{
+  "appId": "com.gullu.pdfshredder",
+  "appName": "PDF Shredder",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
