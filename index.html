@@ -1,3 +1,36 @@
+<!-- नया हेडर सेक्शन -->
+<header class="w-full flex justify-between items-center p-4 text-white">
+    <!-- 3 लाइन मेन्यू (बाएँ) -->
+    <div onclick="toggleMenu('pdfMenu')" class="cursor-pointer text-2xl">☰</div>
+    
+    <!-- 9 डॉट्स मेन्यू (दाएँ) -->
+    <div onclick="toggleMenu('settingsMenu')" class="cursor-pointer text-2xl">⠿</div>
+</header>
+
+<!-- PDF मेन्यू (बायाँ) -->
+<div id="pdfMenu" class="fixed left-0 top-0 h-full w-64 bg-gray-800 p-6 shadow-xl hidden z-50">
+    <button onclick="toggleMenu('pdfMenu')" class="text-white mb-4">✕ बंद करें</button>
+    <div class="space-y-4">
+        <a href="#" class="block text-gray-300 hover:text-red-500">Rotate PDF</a>
+        <a href="#" class="block text-gray-300 hover:text-red-500">Compress PDF</a>
+        <a href="#" class="block text-gray-300 hover:text-red-500">Add Watermark</a>
+    </div>
+</div>
+
+<!-- सेटिंग्स मेन्यू (दायाँ) -->
+<div id="settingsMenu" class="fixed right-0 top-0 h-full w-64 bg-gray-800 p-6 shadow-xl hidden z-50">
+    <button onclick="toggleMenu('settingsMenu')" class="text-white mb-4">✕ बंद करें</button>
+    <div class="space-y-4">
+        <a href="#" class="block text-gray-300 hover:text-red-500">Login / Sign up</a>
+        <a href="#" class="block text-gray-300 hover:text-red-500">Security</a>
+    </div>
+</div>
+
+function toggleMenu(id) {
+    const menu = document.getElementById(id);
+    menu.classList.toggle('hidden');
+}
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -170,3 +203,16 @@
     </script>
 </body>
 </html>
+
+// ... तुम्हारी बाकी पुरानी स्क्रिप्ट यहाँ खत्म होती है ...
+
+// यह रहा नया फंक्शन
+function loadNewFeature(featureName) {
+    alert(featureName + " पर काम चल रहा है! बहुत जल्द आएगा।");
+    // यहाँ तुम अपनी नई फाइल का लॉजिक लिख सकते हो
+}
+
+// ... और फिर तुम्हारी डिफ़ॉल्ट टूल वाली लाइन ...
+setTool('merge');
+
+
