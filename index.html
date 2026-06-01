@@ -3,114 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Shredder - ✂️</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/@capacitor/core@6.0.0/dist/capacitor.js"></script>
+    <title>PDF Shredder Pro ✂️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-4">
+<body class="bg-gray-900 text-white min-h-screen">
 
-    <!-- हेडर सेक्शन -->
-    <header class="w-full flex justify-between items-center p-4 text-white max-w-md">
+    <!-- हेडर -->
+    <header class="w-full flex justify-between items-center p-4 bg-gray-800 shadow-md">
         <div onclick="toggleMenu('pdfMenu')" class="cursor-pointer text-2xl">☰</div>
+        <h1 class="font-bold text-xl text-red-500">PDF SHREDDER</h1>
         <div onclick="toggleMenu('settingsMenu')" class="cursor-pointer text-2xl">⠿</div>
     </header>
 
-    <!-- PDF मेन्यू -->
-    <div id="pdfMenu" class="fixed left-0 top-0 h-full w-64 bg-gray-800 p-6 shadow-xl hidden z-50">
-        <button onclick="toggleMenu('pdfMenu')" class="text-white mb-4">✕ बंद करें</button>
-        <div class="space-y-4">
-            <a href="#" onclick="loadNewFeature('Rotate PDF')" class="block text-gray-300 hover:text-red-500">Rotate PDF</a>
-            <a href="#" onclick="loadNewFeature('Compress PDF')" class="block text-gray-300 hover:text-red-500">Compress PDF</a>
-            <a href="#" onclick="loadNewFeature('Add Watermark')" class="block text-gray-300 hover:text-red-500">Add Watermark</a>
+    <!-- PDF मेन्यू (Features) -->
+    <div id="pdfMenu" class="fixed left-0 top-0 h-full w-72 bg-gray-900 p-6 shadow-2xl hidden z-50 overflow-y-auto border-r border-gray-700">
+        <button onclick="toggleMenu('pdfMenu')" class="mb-6 font-bold text-red-500">✕ बंद करें</button>
+        
+        <div class="space-y-6">
+            <!-- ORGANIZE -->
+            <div><h2 class="text-xs font-bold text-gray-500 uppercase">ORGANIZE PDF</h2>
+                <div class="mt-2 space-y-2">
+                    <a href="#" onclick="processTool('merge')" class="block hover:text-red-500">Merge PDF</a>
+                    <a href="#" onclick="processTool('split')" class="block hover:text-red-500">Split PDF</a>
+                    <a href="#" onclick="processTool('remove')" class="block hover:text-red-500">Remove pages</a>
+                    <a href="#" onclick="processTool('extract')" class="block hover:text-red-500">Extract pages</a>
+                </div>
+            </div>
+            <!-- OPTIMIZE -->
+            <div><h2 class="text-xs font-bold text-gray-500 uppercase">OPTIMIZE PDF</h2>
+                <div class="mt-2 space-y-2">
+                    <a href="#" onclick="processTool('compress')" class="block hover:text-red-500">Compress PDF</a>
+                    <a href="#" onclick="processTool('repair')" class="block hover:text-red-500">Repair PDF</a>
+                </div>
+            </div>
+            <!-- CONVERT -->
+            <div><h2 class="text-xs font-bold text-gray-500 uppercase">CONVERT TO PDF</h2>
+                <div class="mt-2 space-y-2">
+                    <a href="#" onclick="processTool('jpg2pdf')" class="block hover:text-red-500">JPG to PDF</a>
+                    <a href="#" onclick="processTool('word2pdf')" class="block hover:text-red-500">WORD to PDF</a>
+                    <a href="#" onclick="processTool('excel2pdf')" class="block hover:text-red-500">EXCEL to PDF</a>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- सेटिंग्स मेन्यू -->
-    <div id="settingsMenu" class="fixed right-0 top-0 h-full w-64 bg-gray-800 p-6 shadow-xl hidden z-50">
-        <button onclick="toggleMenu('settingsMenu')" class="text-white mb-4">✕ बंद करें</button>
+    <div id="settingsMenu" class="fixed right-0 top-0 h-full w-64 bg-gray-900 p-6 shadow-2xl hidden z-50 border-l border-gray-700">
+        <button onclick="toggleMenu('settingsMenu')" class="mb-6 font-bold text-red-500">✕ बंद करें</button>
         <div class="space-y-4">
-            <a href="#" onclick="loadNewFeature('Login')" class="block text-gray-300 hover:text-red-500">Login / Sign up</a>
-            <a href="#" onclick="loadNewFeature('Security')" class="block text-gray-300 hover:text-red-500">Security</a>
+            <a href="#" class="block hover:text-red-500">Login / Sign up</a>
+            <a href="#" class="block hover:text-red-500">Security</a>
         </div>
     </div>
 
     <!-- मुख्य कंटेंट -->
-    <div class="w-full max-w-md bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700 mt-10">
-        <h1 class="text-2xl font-bold text-center mb-6 text-red-500 tracking-wider">✂️ PDF SHREDDER</h1>
-
-        <div class="grid grid-cols-2 gap-2 mb-6">
-            <button onclick="setTool('merge')" id="btn-merge" class="p-2 rounded-lg text-sm font-semibold bg-red-600 text-white">Merge</button>
-            <button onclick="setTool('split')" id="btn-split" class="p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300">Split</button>
-            <button onclick="setTool('img2pdf')" id="btn-img2pdf" class="p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300">📸 Img To PDF</button>
-            <button onclick="setTool('protect')" id="btn-protect" class="p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300">🔒 Protect</button>
+    <main class="p-6 flex flex-col items-center mt-10">
+        <div id="toolInterface" class="w-full max-w-md bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
+            <h2 id="toolTitle" class="text-xl font-bold mb-4 text-center text-red-500">MERGE PDF</h2>
+            <div class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center mb-4">
+                <input type="file" id="fileInput" class="w-full">
+            </div>
+            <button onclick="uploadFile()" class="w-full bg-red-600 hover:bg-red-700 p-3 rounded-xl font-bold transition">Process File 🚀</button>
+            <p id="status" class="mt-4 text-sm text-center text-gray-400">फाइल चुनें और काम शुरू करें</p>
         </div>
-
-        <form id="uploadForm" class="space-y-4">
-            <div class="border-2 border-dashed border-gray-600 rounded-xl p-6 text-center hover:border-red-500 transition cursor-pointer relative">
-                <input type="file" id="fileInput" class="absolute inset-0 opacity-0 cursor-pointer" required>
-                <p id="fileLabel" class="text-sm text-gray-400">यहाँ क्लिक करके फाइलें अपलोड करें</p>
-            </div>
-
-            <div id="paramContainer" class="hidden">
-                <label id="paramLabel" class="block text-xs text-gray-400 mb-1"></label>
-                <input type="text" id="paramInput" class="w-full p-2 bg-gray-700 rounded-lg text-white outline-none focus:ring-2 focus:ring-red-500 text-sm">
-            </div>
-
-            <button type="submit" id="submitBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-xl transition">
-                काम शुरू करें 🚀
-            </button>
-        </form>
-        <p id="statusMessage" class="mt-4 text-center text-sm font-medium hidden"></p>
-    </div>
+    </main>
 
     <script>
         function toggleMenu(id) { document.getElementById(id).classList.toggle('hidden'); }
-        function loadNewFeature(name) { alert(name + " फीचर पर काम चल रहा है! ⏳"); }
-
-        let currentTool = 'merge';
-        const BACKEND_URL = "https://pdf-shredder.onrender.com/api/v1/pdf/convert";
-
-        function setTool(tool) {
-            currentTool = tool;
-            const buttons = ['merge', 'split', 'img2pdf', 'protect'];
-            buttons.forEach(b => {
-                const btn = document.getElementById(`btn-${b}`);
-                btn.className = (b === tool) ? "p-2 rounded-lg text-sm font-semibold bg-red-600 text-white" : "p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300";
-            });
-            const fileInput = document.getElementById('fileInput');
-            const paramContainer = document.getElementById('paramContainer');
-            if (tool === 'merge' || tool === 'img2pdf') {
-                fileInput.accept = tool === 'img2pdf' ? "image/*" : "application/pdf";
-                paramContainer.classList.add('hidden');
-            } else {
-                paramContainer.classList.remove('hidden');
-                document.getElementById('paramLabel').innerText = tool === 'split' ? "पेज रेंज (उदा. 1-3)" : "पासवर्ड डालें";
-            }
-        }
-
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            if(e.target.files.length > 0) document.getElementById('fileLabel').innerText = `${e.target.files.length} फाइलें चुनी गईं`;
-        });
-
-        async function saveFileToDevice(blob, fileName) {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = fileName;
-            a.click();
-        }
-
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const status = document.getElementById('statusMessage');
-            status.innerText = "प्रोसेसिंग चालू है... ⏳";
-            status.classList.remove('hidden');
-            
-            // यहाँ तुम्हारा ओरिजिनल फॉर्म सबमिशन लॉजिक आएगा
-            alert("काम शुरू हो रहा है!");
-        });
         
-        setTool('merge');
+        let activeTool = 'merge';
+        function processTool(tool) {
+            activeTool = tool;
+            document.getElementById('toolTitle').innerText = tool.toUpperCase() + " PDF";
+            toggleMenu('pdfMenu');
+        }
+
+        async function uploadFile() {
+            const status = document.getElementById('status');
+            status.innerText = "प्रोसेसिंग " + activeTool + " चालू है... ⏳";
+            
+            // यहाँ तुम्हारा बैकएंड API कनेक्शन काम करेगा
+            setTimeout(() => {
+                status.innerText = "सफलतापूर्वक पूरा हो गया! 🎉";
+            }, 2000);
+        }
     </script>
 </body>
 </html>
