@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Shredder - ✂️</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Capacitor Core script for Android Features -->
+    <script src="https://unpkg.com/@capacitor/core@6.0.0/dist/capacitor.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
+        <h1 class="text-2xl font-bold text-center mb-6 text-red-500 tracking-wider">✂️ PDF SHREDDER</h1>
+
+        <div class="grid grid-cols-2 gap-2 mb-6">
+            <button onclick="setTool('merge')" id="btn-merge" class="p-2 rounded-lg text-sm font-semibold bg-red-600 text-white">Merge</button>
+            <button onclick="setTool('split')" id="btn-split" class="p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300">Split</button>
+            <button onclick="setTool('img2pdf')" id="btn-img2pdf" class="p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300">📸 Img To PDF</button>
+            <button onclick="setTool('protect')" id="btn-protect" class="p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300">🔒 Protect</button>
+        </div>
+
+        <form id="uploadForm" class="space-y-4">
+            <div class="border-2 border-dashed border-gray-600 rounded-xl p-6 text-center hover:border-red-500 transition cursor-pointer relative">
+                <input type="file" id="fileInput" class="absolute inset-0 opacity-0 cursor-pointer" required>
+                <p id="fileLabel" class="text-sm text-gray-400">यहाँ क्लिक करके फाइलें अपलोड करें</p>
+            </div>
+
+            <div id="paramContainer" class="hidden">
+                <label id="paramLabel" class="block text-xs text-gray-400 mb-1"></label>
+                <input type="text" id="paramInput" class="w-full p-2 bg-gray-700 rounded-lg text-white outline-none focus:ring-2 focus:ring-red-500 text-sm">
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-xl transition">
+                काम शुरू करें 🚀
+            </button>
+        </form>
+
+        <p id="statusMessage" class="mt-4 text-center text-sm font-medium hidden"></p>
+    </div>
+
+    <script>
+        let currentTool = 'merge';
+        const BACKEND_URL = "https://pdf-shredder.onrender.com/api/v1/pdf/convert";
+
+        function setTool(tool) {
+            currentTool = tool;
+            const buttons = ['merge', 'split', 'img2pdf', 'protect'];
+            buttons.forEach(b => {
+                const btn = document.getElementById(`btn-${b}`);
+                if(b === tool) {
+                    btn.className = "p-2 rounded-lg text-sm font-semibold bg-red-600 text-white";
+                } else {
+                    btn.className = "p-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300";
+                }
+            });
+
+            const fileInput = document.getElementById('fileInput');
+            const paramContainer = document.getElementById('paramContainer');
+            const paramLabel = document.getElementById('paramLabel');
+            const paramInput = document.getElementById('paramInput');
+            
+            document.getElementById('fileLabel').innerText = "यहाँ क्लिक करके फाइलें अपलोड करें";
+            fileInput.value = "";
+
+            if (tool === 'merge' || tool === 'img2pdf') {
+                fileInput.removeAttribute('multiple'); // Reset first
+                fileInput.setAttribute('multiple', 'true'); // Native Multiple support
+                fileInput.accept = tool === 'img2pdf' ? "image/*" : "application/pdf";
+                paramContainer.classList.add('hidden');
+                paramInput.required = false;
+            } else {
+                fileInput.removeAttribute('multiple');
+                fileInput.accept = "application/pdf";
+                paramContainer.classList.remove('hidden');
+                paramInput.required = true;
+                paramLabel.innerText = tool === 'split' ? "पेजレンジ (जैसे: 1-3)" : "PDF का पासवर्ड सेट करें";
+                paramInput.placeholder = tool === 'split' ? "उदा. 1-3" : "पासवर्ड डालें";
+                paramInput.type = tool === 'split' ? "text" : "password";
+            }
+        }
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const files = e.target.files;
+            if(files.length > 0) {
+                document.getElementById('fileLabel').innerText = `${files.length} फाइलें चुनी गईं`;
+            }
+        });
+
+        // नेटिव एंड्रॉयड स्टोरेज में डाउनलोड करने का फंक्शन
+        async function saveFileToDevice(blob, fileName) {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                const base64Data = reader.result.split(',')[1];
+                
+                // अगर ऐप Capacitor (Android) के अंदर चल रही है
+                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                    try {
+                        // Dynamic call to prevent web crash
+                        const { Filesystem } = window.Capacitor.Plugins;
+                        await Filesystem.writeFile({
+                            path: fileName,
+                            data: base64Data,
+                            directory: 'DOWNLOAD' // सीधे फोन के असली Downloads फोल्डर में जाएगा
+                        });
+                        alert('फाइल सफलतापूर्वक Downloads फोल्डर में सेव हो गई है! 🎉');
+                    } catch (err) {
+                        alert('स्टोरेज एरर: कृपया ऐप सेटिंग्स में जाकर स्टोरेज परमिशन चेक करें।');
+                    }
+                } else {
+                    // अगर नॉर्मल क्रोम या ब्राउज़र पर चल रहा है
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }
+            };
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const paramInput = document.getElementById('paramInput');
+            const status = document.getElementById('statusMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!fileInput.files.length) return;
+
+            status.classList.remove('hidden', 'text-red-400', 'text-green-400');
+            status.className = "mt-4 text-center text-sm font-medium text-yellow-400";
+            status.innerText = "प्रोसेसिंग चालू है, कृपया रुकें... ⏳";
+            submitBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("tool", currentTool);
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append("files", fileInput.files[i]);
+            }
+            if (!paramContainer.classList.contains('hidden') && paramInput.value) {
+                formData.append("param", paramInput.value);
+            }
+
+            try {
+                const response = await fetch(BACKEND_URL, { method: "POST", body: formData });
+                if (!response.ok) throw new Error("सर्वर से गड़बड़ हुई!");
+
+                const blob = await response.blob();
+                const outputFileName = `${currentTool}_output_${Date.now()}.pdf`;
+                
+                // नया सेफ डाउनलोड मैनेजर कॉल
+                await saveFileToDevice(blob, outputFileName);
+
+                status.className = "mt-4 text-center text-sm font-medium text-green-400";
+                status.innerText = "सफलतापूर्वक पूरा हो गया! 🎉";
+            } catch (err) {
+                status.className = "mt-4 text-center text-sm font-medium text-red-400";
+                status.innerText = "एरर: कुछ गड़बड़ हो गई, फिर से कोशिश करें।";
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // डिफ़ॉल्ट रूप से पहले टूल को सेटअप करें
+        setTool('merge');
+    </script>
+</body>
+</html>
